@@ -1,0 +1,6 @@
+@AchParser.Api_HostAddress = http://localhost:5231
+
+GET {{AchParser.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

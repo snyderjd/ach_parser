@@ -1,0 +1,36 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{74A4A4A7-4868-4AAA-AC36-AFD1CCF47AC1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AchParser.Api", "src\AchParser.Api\AchParser.Api.csproj", "{6F848131-055D-4F96-8D97-D736DA820E9C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{D43427C8-91EE-485E-B375-4D1A2ACC879B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AchParser.Api.UnitTests", "tests\AchParser.Api.UnitTests\AchParser.Api.UnitTests.csproj", "{011902CA-B4BF-4658-9D14-313FBA6AADA6}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6F848131-055D-4F96-8D97-D736DA820E9C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6F848131-055D-4F96-8D97-D736DA820E9C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6F848131-055D-4F96-8D97-D736DA820E9C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6F848131-055D-4F96-8D97-D736DA820E9C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{011902CA-B4BF-4658-9D14-313FBA6AADA6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{011902CA-B4BF-4658-9D14-313FBA6AADA6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{011902CA-B4BF-4658-9D14-313FBA6AADA6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{011902CA-B4BF-4658-9D14-313FBA6AADA6}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{6F848131-055D-4F96-8D97-D736DA820E9C} = {74A4A4A7-4868-4AAA-AC36-AFD1CCF47AC1}
+		{011902CA-B4BF-4658-9D14-313FBA6AADA6} = {D43427C8-91EE-485E-B375-4D1A2ACC879B}
+	EndGlobalSection
+EndGlobal
