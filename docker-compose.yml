@@ -18,5 +18,18 @@ services:
       timeout: 5s
       retries: 5
 
+  api:
+    build:
+      context: ./src/AchParser.Api
+    container_name: ach_parser_api
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      ConnectionStrings__DefaultConnection: "Host=${DB_HOST};Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
+      ASPNETCORE_ENVIRONMENT: "Development"
+
 volumes:
   postgres_data:
