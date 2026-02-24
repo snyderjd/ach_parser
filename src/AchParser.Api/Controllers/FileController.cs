@@ -64,8 +64,12 @@ public class FileController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> UploadFile([FromForm] IFormFile file)
+    [Consumes("multipart/form-data")]
+    [ProducesResponseType(typeof(AchFileResponseDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> UploadFile([FromForm] FileUploadDto dto)
     {
+        var file = dto.File;
         if (file == null || file.Length == 0)
         {
             return BadRequest("No file uploaded.");
