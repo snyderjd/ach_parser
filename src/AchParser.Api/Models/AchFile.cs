@@ -11,7 +11,7 @@ public class AchFile
     public string UnparsedFile { get; set; } = null!;
     public DateTime CreatedAt { get; set; }
 
-    public FileHeader FileHeader { get; set; } = null!;
-    public FileControl FileControl { get; set; } = null!;
-    public ICollection<BatchHeader> BatchHeaders { get; set; } = new List<BatchHeader>();
+    // public FileHeader FileHeader { get; set; } = null!;
+    // public FileControl FileControl { get; set; } = null!;
+    // public ICollection<BatchHeader> BatchHeaders { get; set; } = new List<BatchHeader>();
 }

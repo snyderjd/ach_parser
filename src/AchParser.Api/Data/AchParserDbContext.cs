@@ -20,7 +20,7 @@ public class AchParserDbContext : DbContext
     {
         // Snake_case naming convention should be configured in Program.cs via Npgsql options, not here.
 
-        // AchFile
+        // AchFile (minimal for unparsed file storage)
         modelBuilder.Entity<AchFile>(entity =>
         {
             entity.ToTable("ach_files");
@@ -29,26 +29,26 @@ public class AchParserDbContext : DbContext
             entity.Property(e => e.Hash).IsRequired();
             entity.Property(e => e.UnparsedFile).IsRequired();
             entity.Property(e => e.CreatedAt).HasColumnName("created_at");
-
-            entity.HasOne(e => e.FileHeader)
-                .WithOne(e => e.AchFile)
-                .HasForeignKey<FileHeader>(e => e.AchFileId)
-                .IsRequired()
-                .OnDelete(DeleteBehavior.Cascade);
-            entity.HasOne(e => e.FileControl)
-                .WithOne(e => e.AchFile)
-                .HasForeignKey<FileControl>(e => e.AchFileId)
-                .IsRequired()
-                .OnDelete(DeleteBehavior.Cascade);
-            entity.HasMany(e => e.BatchHeaders)
-                .WithOne(e => e.AchFile)
-                .HasForeignKey(e => e.AchFileId)
-                .IsRequired()
-                .OnDelete(DeleteBehavior.Cascade);
-            entity.HasIndex(e => e.Hash).IsUnique();
+            // entity.HasOne(e => e.FileHeader)
+            //     .WithOne(e => e.AchFile)
+            //     .HasForeignKey<FileHeader>(e => e.AchFileId)
+            //     .IsRequired()
+            //     .OnDelete(DeleteBehavior.Cascade);
+            // entity.HasOne(e => e.FileControl)
+            //     .WithOne(e => e.AchFile)
+            //     .HasForeignKey<FileControl>(e => e.AchFileId)
+            //     .IsRequired()
+            //     .OnDelete(DeleteBehavior.Cascade);
+            // entity.HasMany(e => e.BatchHeaders)
+            //     .WithOne(e => e.AchFile)
+            //     .HasForeignKey(e => e.AchFileId)
+            //     .IsRequired()
+            //     .OnDelete(DeleteBehavior.Cascade);
+            // entity.HasIndex(e => e.Hash).IsUnique();
         });
 
         // FileHeader
+        /*
         modelBuilder.Entity<FileHeader>(entity =>
         {
             entity.ToTable("file_headers");
@@ -63,8 +63,10 @@ public class AchParserDbContext : DbContext
             entity.Property(e => e.UnparsedRecord).HasColumnType("char(94)").IsRequired();
             entity.HasIndex(e => e.AchFileId).IsUnique();
         });
+        */
 
         // FileControl
+        /*
         modelBuilder.Entity<FileControl>(entity =>
         {
             entity.ToTable("file_controls");
@@ -78,8 +80,10 @@ public class AchParserDbContext : DbContext
             entity.Property(e => e.UnparsedRecord).HasColumnType("char(94)").IsRequired();
             entity.HasIndex(e => e.AchFileId).IsUnique();
         });
+        */
 
         // BatchHeader
+        /*
         modelBuilder.Entity<BatchHeader>(entity =>
         {
             entity.ToTable("batch_headers");
@@ -100,8 +104,10 @@ public class AchParserDbContext : DbContext
                 .IsRequired()
                 .OnDelete(DeleteBehavior.Cascade);
         });
+        */
 
         // BatchControl
+        /*
         modelBuilder.Entity<BatchControl>(entity =>
         {
             entity.ToTable("batch_controls");
@@ -113,8 +119,10 @@ public class AchParserDbContext : DbContext
             entity.Property(e => e.UnparsedRecord).HasColumnType("char(94)").IsRequired();
             entity.HasIndex(e => e.BatchHeaderId).IsUnique();
         });
+        */
 
         // EntryDetail
+        /*
         modelBuilder.Entity<EntryDetail>(entity =>
         {
             entity.ToTable("entry_details");
@@ -131,8 +139,10 @@ public class AchParserDbContext : DbContext
                 .IsRequired()
                 .OnDelete(DeleteBehavior.Cascade);
         });
+        */
 
         // Addenda
+        /*
         modelBuilder.Entity<Addenda>(entity =>
         {
             entity.ToTable("addendas");
@@ -141,5 +151,6 @@ public class AchParserDbContext : DbContext
             entity.Property(e => e.LineNumber).IsRequired();
             entity.Property(e => e.UnparsedRecord).HasColumnType("char(94)").IsRequired();
         });
+        */
     }
 }
