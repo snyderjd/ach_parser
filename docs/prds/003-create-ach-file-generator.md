@@ -1,6 +1,6 @@
 # ACH Raw File Generator
 
-1. Purpose
+## 1. Purpose
 
 - Build a standalone console application that generates valid, syntatically correct ACH .txt files for testing the AchParser API.
 
@@ -19,7 +19,7 @@
 
 - This is NOT intended to simulate returns, NOCs, or reversals in phase 1
 
-2. High-Level Architecture
+## 2. High-Level Architecture
 
 - The generator shall:
     - Be a separate console application project
@@ -35,7 +35,7 @@
         docs/
         tests/
 
-3. Scope (Phase 1)
+## 3. Scope (Phase 1)
 
 ### Included
 - File Header Record (Type 1)
@@ -53,7 +53,7 @@
 - Reversals
 - Multiple batches per file (Phase 1 may optionally support 1 batch only)
 
-4. Functional Requirements
+## 4. Functional Requirements
 
 ### 4.1 Command Line Interface
 - The generator shall support:
@@ -68,7 +68,7 @@ dotnet run --
     - `--output`: Output file name (e.g. sample1.ach)
 
 
-5. ACH File Rules (Must be correct)
+## 5. ACH File Rules (Must be correct)
 
 - The generator must:
 
@@ -135,7 +135,7 @@ dotnet run --
     - Be divisible into blocks of 10 records
     - Pad with "9" records until total record count % 10 == 0
 
-6. Non-Functional Requirements
+## 6. Non-Functional Requirements
 
 - Deterministic option (optional future feature)
 - Clean separation of formatting logic
@@ -143,10 +143,60 @@ dotnet run --
 - No external services
 - No third-party ACH libraries
 
-7. Design Guidelines
+## 7. Design Guidelines
 
-8. Validation Criteria
+### 7.1 Code Organization
+- Suggested structure inside AchParser.Generator:
+```
+/Builders
+    AchFileBuilder.cs
+    BatchBuilder.cs
+    EntryBuilder.cs
 
-9. Success Criteria
+/Formatting
+    FixedWidthFormatter.cs
 
-10. Future Phases (Do not implement yet)
+/Utilities
+    RoutingNumberGenerator.cs
+    AmountGenerator.cs
+
+Program.cs
+```
+
+## 8. Validation Criteria
+
+- A generated file mus:
+    - Be 94 characters per line
+    - Have valid routing numbers
+    - Have correct entry hash totals
+    - Have correct control totals
+    - Be accepted by AchParser upload endpoint
+    - Parse cleanly once parser is implemented
+
+## 9. Success Criteria
+
+- The generator is complete when:
+    - A 1,000 entry file can be generated
+    - The file uploads successfully to AchParser.Api
+    - Control totals reconcile correctly
+    - File size scales linearly with entry count
+
+## 10. Future Phases (Do not implement yet)
+- Addenda records
+- Multiple batches
+- Mixed debit/credit files
+- Returns (R01-R85)
+- Same day ACH
+- Unbalanced files
+- Intentional corruption mode
+- Scenaiorio based generation
+
+
+
+
+
+
+
+
+
+
