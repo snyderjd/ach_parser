@@ -1,5 +1,5 @@
 using System;
-using AchParser.Generator.Utilties;
+using AchParser.Generator.Utilities;
 
 namespace AchParser.Generator.Builders;
 
