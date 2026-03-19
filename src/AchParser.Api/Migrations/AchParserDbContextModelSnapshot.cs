@@ -3,20 +3,17 @@ using System;
 using AchParser.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace AchParser.Api.Data.Migrations
+namespace AchParser.Api.Migrations
 {
     [DbContext(typeof(AchParserDbContext))]
-    [Migration("20260305033734_MinimalAchFileOnly")]
-    partial class MinimalAchFileOnly
+    partial class AchParserDbContextModelSnapshot : ModelSnapshot
     {
-        /// <inheritdoc />
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -29,8 +26,7 @@ namespace AchParser.Api.Data.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -38,21 +34,20 @@ namespace AchParser.Api.Data.Migrations
 
                     b.Property<string>("Filename")
                         .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("filename");
+                        .HasColumnType("text");
 
                     b.Property<string>("Hash")
                         .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("hash");
+                        .HasColumnType("text");
 
                     b.Property<string>("UnparsedFile")
                         .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("unparsed_file");
+                        .HasColumnType("text");
 
-                    b.HasKey("Id")
-                        .HasName("pk_ach_files");
+                    b.HasKey("Id");
+
+                    b.HasIndex("Hash")
+                        .IsUnique();
 
                     b.ToTable("ach_files", (string)null);
                 });
@@ -61,274 +56,218 @@ namespace AchParser.Api.Data.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
+                        .HasColumnType("uuid");
 
                     b.Property<Guid>("EntryDetailId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("entry_detail_id");
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Information")
                         .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("information");
+                        .HasColumnType("text");
 
                     b.Property<int>("LineNumber")
-                        .HasColumnType("integer")
-                        .HasColumnName("line_number");
+                        .HasColumnType("integer");
 
                     b.Property<string>("UnparsedRecord")
                         .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("unparsed_record");
+                        .HasColumnType("char(94)");
 
-                    b.HasKey("Id")
-                        .HasName("pk_addenda");
+                    b.HasKey("Id");
 
-                    b.HasIndex("EntryDetailId")
-                        .HasDatabaseName("ix_addenda_entry_detail_id");
+                    b.HasIndex("EntryDetailId");
 
-                    b.ToTable("addenda", (string)null);
+                    b.ToTable("addendas", (string)null);
                 });
 
             modelBuilder.Entity("AchParser.Api.Models.BatchControl", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
+                        .HasColumnType("uuid");
 
                     b.Property<Guid>("BatchHeaderId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("batch_header_id");
+                        .HasColumnType("uuid");
 
                     b.Property<int>("EntryAddendaCount")
-                        .HasColumnType("integer")
-                        .HasColumnName("entry_addenda_count");
+                        .HasColumnType("integer");
 
                     b.Property<int>("LineNumber")
-                        .HasColumnType("integer")
-                        .HasColumnName("line_number");
+                        .HasColumnType("integer");
 
                     b.Property<decimal>("TotalCredit")
-                        .HasColumnType("numeric")
-                        .HasColumnName("total_credit");
+                        .HasColumnType("numeric(12,2)");
 
                     b.Property<decimal>("TotalDebit")
-                        .HasColumnType("numeric")
-                        .HasColumnName("total_debit");
+                        .HasColumnType("numeric(12,2)");
 
                     b.Property<string>("UnparsedRecord")
                         .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("unparsed_record");
+                        .HasColumnType("char(94)");
 
-                    b.HasKey("Id")
-                        .HasName("pk_batch_control");
+                    b.HasKey("Id");
 
                     b.HasIndex("BatchHeaderId")
-                        .IsUnique()
-                        .HasDatabaseName("ix_batch_control_batch_header_id");
+                        .IsUnique();
 
-                    b.ToTable("batch_control", (string)null);
+                    b.ToTable("batch_controls", (string)null);
                 });
 
             modelBuilder.Entity("AchParser.Api.Models.BatchHeader", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
+                        .HasColumnType("uuid");
 
                     b.Property<Guid>("AchFileId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("ach_file_id");
+                        .HasColumnType("uuid");
 
                     b.Property<string>("CompanyIdentification")
                         .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("company_identification");
+                        .HasColumnType("text");
 
                     b.Property<string>("CompanyName")
                         .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("company_name");
+                        .HasColumnType("text");
 
                     b.Property<int>("LineNumber")
-                        .HasColumnType("integer")
-                        .HasColumnName("line_number");
+                        .HasColumnType("integer");
 
                     b.Property<string>("ServiceClassCode")
                         .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("service_class_code");
+                        .HasColumnType("char(3)");
 
                     b.Property<string>("UnparsedRecord")
                         .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("unparsed_record");
+                        .HasColumnType("char(94)");
 
-                    b.HasKey("Id")
-                        .HasName("pk_batch_header");
+                    b.HasKey("Id");
 
-                    b.HasIndex("AchFileId")
-                        .HasDatabaseName("ix_batch_header_ach_file_id");
+                    b.HasIndex("AchFileId");
 
-                    b.ToTable("batch_header", (string)null);
+                    b.ToTable("batch_headers", (string)null);
                 });
 
             modelBuilder.Entity("AchParser.Api.Models.EntryDetail", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
+                        .HasColumnType("uuid");
 
                     b.Property<string>("AccountNumber")
                         .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("account_number");
+                        .HasColumnType("text");
 
                     b.Property<decimal>("Amount")
-                        .HasColumnType("numeric")
-                        .HasColumnName("amount");
+                        .HasColumnType("numeric(12,2)");
 
                     b.Property<Guid>("BatchHeaderId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("batch_header_id");
+                        .HasColumnType("uuid");
 
                     b.Property<string>("IndividualName")
                         .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("individual_name");
+                        .HasColumnType("text");
 
                     b.Property<int>("LineNumber")
-                        .HasColumnType("integer")
-                        .HasColumnName("line_number");
+                        .HasColumnType("integer");
 
                     b.Property<string>("RoutingNumber")
                         .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("routing_number");
+                        .HasColumnType("char(9)");
 
                     b.Property<string>("UnparsedRecord")
                         .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("unparsed_record");
+                        .HasColumnType("char(94)");
 
-                    b.HasKey("Id")
-                        .HasName("pk_entry_detail");
+                    b.HasKey("Id");
 
-                    b.HasIndex("BatchHeaderId")
-                        .HasDatabaseName("ix_entry_detail_batch_header_id");
+                    b.HasIndex("BatchHeaderId");
 
-                    b.ToTable("entry_detail", (string)null);
+                    b.ToTable("entry_details", (string)null);
                 });
 
             modelBuilder.Entity("AchParser.Api.Models.FileControl", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
+                        .HasColumnType("uuid");
 
                     b.Property<Guid>("AchFileId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("ach_file_id");
+                        .HasColumnType("uuid");
 
                     b.Property<int>("BatchCount")
-                        .HasColumnType("integer")
-                        .HasColumnName("batch_count");
+                        .HasColumnType("integer");
 
                     b.Property<int>("BlockCount")
-                        .HasColumnType("integer")
-                        .HasColumnName("block_count");
+                        .HasColumnType("integer");
 
                     b.Property<int>("EntryAddendaCount")
-                        .HasColumnType("integer")
-                        .HasColumnName("entry_addenda_count");
+                        .HasColumnType("integer");
 
                     b.Property<int>("LineNumber")
-                        .HasColumnType("integer")
-                        .HasColumnName("line_number");
+                        .HasColumnType("integer");
 
                     b.Property<decimal>("TotalCredit")
-                        .HasColumnType("numeric")
-                        .HasColumnName("total_credit");
+                        .HasColumnType("numeric(12,2)");
 
                     b.Property<decimal>("TotalDebit")
-                        .HasColumnType("numeric")
-                        .HasColumnName("total_debit");
+                        .HasColumnType("numeric(12,2)");
 
                     b.Property<string>("UnparsedRecord")
                         .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("unparsed_record");
+                        .HasColumnType("char(94)");
 
-                    b.HasKey("Id")
-                        .HasName("pk_file_control");
+                    b.HasKey("Id");
 
                     b.HasIndex("AchFileId")
-                        .HasDatabaseName("ix_file_control_ach_file_id");
+                        .IsUnique();
 
-                    b.ToTable("file_control", (string)null);
+                    b.ToTable("file_controls", (string)null);
                 });
 
             modelBuilder.Entity("AchParser.Api.Models.FileHeader", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
+                        .HasColumnType("uuid");
 
                     b.Property<Guid>("AchFileId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("ach_file_id");
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("FileCreationDate")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("file_creation_date");
+                        .HasColumnType("date");
 
                     b.Property<TimeSpan>("FileCreationTime")
-                        .HasColumnType("interval")
-                        .HasColumnName("file_creation_time");
+                        .HasColumnType("time");
 
                     b.Property<string>("ImmediateDestination")
                         .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("immediate_destination");
+                        .HasColumnType("text");
 
                     b.Property<string>("ImmediateDestinationName")
                         .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("immediate_destination_name");
+                        .HasColumnType("text");
 
                     b.Property<string>("ImmediateOrigin")
                         .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("immediate_origin");
+                        .HasColumnType("text");
 
                     b.Property<string>("ImmediateOriginName")
                         .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("immediate_origin_name");
+                        .HasColumnType("text");
 
                     b.Property<int>("LineNumber")
-                        .HasColumnType("integer")
-                        .HasColumnName("line_number");
+                        .HasColumnType("integer");
 
                     b.Property<string>("UnparsedRecord")
                         .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("unparsed_record");
+                        .HasColumnType("char(94)");
 
-                    b.HasKey("Id")
-                        .HasName("pk_file_header");
+                    b.HasKey("Id");
 
                     b.HasIndex("AchFileId")
-                        .HasDatabaseName("ix_file_header_ach_file_id");
+                        .IsUnique();
 
-                    b.ToTable("file_header", (string)null);
+                    b.ToTable("file_headers", (string)null);
                 });
 
             modelBuilder.Entity("AchParser.Api.Models.Addenda", b =>
@@ -337,8 +276,7 @@ namespace AchParser.Api.Data.Migrations
                         .WithMany("Addendas")
                         .HasForeignKey("EntryDetailId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_addenda_entry_detail_entry_detail_id");
+                        .IsRequired();
 
                     b.Navigation("EntryDetail");
                 });
@@ -349,8 +287,7 @@ namespace AchParser.Api.Data.Migrations
                         .WithOne("BatchControl")
                         .HasForeignKey("AchParser.Api.Models.BatchControl", "BatchHeaderId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_batch_control_batch_header_batch_header_id");
+                        .IsRequired();
 
                     b.Navigation("BatchHeader");
                 });
@@ -358,11 +295,10 @@ namespace AchParser.Api.Data.Migrations
             modelBuilder.Entity("AchParser.Api.Models.BatchHeader", b =>
                 {
                     b.HasOne("AchParser.Api.Models.AchFile", "AchFile")
-                        .WithMany()
+                        .WithMany("BatchHeaders")
                         .HasForeignKey("AchFileId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_batch_header_ach_file_ach_file_id");
+                        .IsRequired();
 
                     b.Navigation("AchFile");
                 });
@@ -373,8 +309,7 @@ namespace AchParser.Api.Data.Migrations
                         .WithMany("EntryDetails")
                         .HasForeignKey("BatchHeaderId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_entry_detail_batch_header_batch_header_id");
+                        .IsRequired();
 
                     b.Navigation("BatchHeader");
                 });
@@ -382,11 +317,10 @@ namespace AchParser.Api.Data.Migrations
             modelBuilder.Entity("AchParser.Api.Models.FileControl", b =>
                 {
                     b.HasOne("AchParser.Api.Models.AchFile", "AchFile")
-                        .WithMany()
-                        .HasForeignKey("AchFileId")
+                        .WithOne("FileControl")
+                        .HasForeignKey("AchParser.Api.Models.FileControl", "AchFileId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_file_control_ach_file_ach_file_id");
+                        .IsRequired();
 
                     b.Navigation("AchFile");
                 });
@@ -394,13 +328,21 @@ namespace AchParser.Api.Data.Migrations
             modelBuilder.Entity("AchParser.Api.Models.FileHeader", b =>
                 {
                     b.HasOne("AchParser.Api.Models.AchFile", "AchFile")
-                        .WithMany()
-                        .HasForeignKey("AchFileId")
+                        .WithOne("FileHeader")
+                        .HasForeignKey("AchParser.Api.Models.FileHeader", "AchFileId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_file_header_ach_file_ach_file_id");
+                        .IsRequired();
 
                     b.Navigation("AchFile");
+                });
+
+            modelBuilder.Entity("AchParser.Api.Models.AchFile", b =>
+                {
+                    b.Navigation("BatchHeaders");
+
+                    b.Navigation("FileControl");
+
+                    b.Navigation("FileHeader");
                 });
 
             modelBuilder.Entity("AchParser.Api.Models.BatchHeader", b =>
