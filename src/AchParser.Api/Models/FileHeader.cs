@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace AchParser.Api.Models;
 
@@ -15,5 +16,5 @@ public class FileHeader
     public int LineNumber { get; set; }
     public string UnparsedRecord { get; set; } = null!;
 
-    public AchFile AchFile { get; set; } = null!;
+    public AchFile? AchFile { get; set; }
 }

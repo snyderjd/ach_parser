@@ -18,127 +18,49 @@ public class AchParserDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        // Snake_case naming convention should be configured in Program.cs via Npgsql options, not here.
+        // Some of these are supposed to be one-to-one relationships but I kept running into issues
+        // creating migrations with .UseSnakeCaseNamingConvention getting the following error:
+        
+        // Unable to create a 'DbContext' of type ''. The exception 'The object has been 
+        // removed from the model.' was thrown while attempting to create an instance. For 
+        // the different patterns supported at design time, see https://go.microsoft.com/fwlink/?linkid=851728
 
-        // AchFile
-        modelBuilder.Entity<AchFile>(entity =>
-        {
-            entity.ToTable("ach_files");
-            entity.HasKey(e => e.Id);
-            entity.Property(e => e.Filename).IsRequired();
-            entity.Property(e => e.Hash).IsRequired();
-            entity.Property(e => e.UnparsedFile).IsRequired();
-            entity.Property(e => e.CreatedAt).HasColumnName("created_at");
-            entity.HasOne(e => e.FileHeader)
-                .WithOne(e => e.AchFile)
-                .HasForeignKey<FileHeader>(e => e.AchFileId)
-                .IsRequired()
-                .OnDelete(DeleteBehavior.Cascade);
-            entity.HasOne(e => e.FileControl)
-                .WithOne(e => e.AchFile)
-                .HasForeignKey<FileControl>(e => e.AchFileId)
-                .IsRequired()
-                .OnDelete(DeleteBehavior.Cascade);
-            entity.HasMany(e => e.BatchHeaders)
-                .WithOne(e => e.AchFile)
-                .HasForeignKey(e => e.AchFileId)
-                .IsRequired()
-                .OnDelete(DeleteBehavior.Cascade);
-            entity.HasIndex(e => e.Hash).IsUnique();
-        });
 
-        // FileHeader
-        modelBuilder.Entity<FileHeader>(entity =>
-        {
-            entity.ToTable("file_headers");
-            entity.HasKey(e => e.Id);
-            entity.Property(e => e.ImmediateDestination).IsRequired();
-            entity.Property(e => e.ImmediateOrigin).IsRequired();
-            entity.Property(e => e.FileCreationDate).HasColumnType("date").IsRequired();
-            entity.Property(e => e.FileCreationTime).HasColumnType("time").IsRequired();
-            entity.Property(e => e.ImmediateDestinationName).IsRequired();
-            entity.Property(e => e.ImmediateOriginName).IsRequired();
-            entity.Property(e => e.LineNumber).IsRequired();
-            entity.Property(e => e.UnparsedRecord).HasColumnType("char(94)").IsRequired();
-            entity.HasIndex(e => e.AchFileId).IsUnique();
-        });
+        // AchFile <-> FileHeader (one-to-many)
+        modelBuilder.Entity<FileHeader>()
+            .HasOne(fh => fh.AchFile)
+            .WithMany(af => af.FileHeaders)
+            .HasForeignKey(fh => fh.AchFileId);
 
-        // FileControl
-        modelBuilder.Entity<FileControl>(entity =>
-        {
-            entity.ToTable("file_controls");
-            entity.HasKey(e => e.Id);
-            entity.Property(e => e.BatchCount).IsRequired();
-            entity.Property(e => e.BlockCount).IsRequired();
-            entity.Property(e => e.EntryAddendaCount).IsRequired();
-            entity.Property(e => e.TotalDebit).HasColumnType("numeric(12,2)").IsRequired();
-            entity.Property(e => e.TotalCredit).HasColumnType("numeric(12,2)").IsRequired();
-            entity.Property(e => e.LineNumber).IsRequired();
-            entity.Property(e => e.UnparsedRecord).HasColumnType("char(94)").IsRequired();
-            entity.HasIndex(e => e.AchFileId).IsUnique();
-        });
+        // AchFile <-> FileControl (one-to-many)
+        modelBuilder.Entity<FileControl>()
+            .HasOne(fc => fc.AchFile)
+            .WithMany(af => af.FileControls)
+            .HasForeignKey(fc => fc.AchFileId);
 
-        // BatchHeader
-        modelBuilder.Entity<BatchHeader>(entity =>
-        {
-            entity.ToTable("batch_headers");
-            entity.HasKey(e => e.Id);
-            entity.Property(e => e.ServiceClassCode).HasColumnType("char(3)").IsRequired();
-            entity.Property(e => e.CompanyName).IsRequired();
-            entity.Property(e => e.CompanyIdentification).IsRequired();
-            entity.Property(e => e.LineNumber).IsRequired();
-            entity.Property(e => e.UnparsedRecord).HasColumnType("char(94)").IsRequired();
-            entity.HasMany(e => e.EntryDetails)
-                .WithOne(e => e.BatchHeader)
-                .HasForeignKey(e => e.BatchHeaderId)
-                .IsRequired()
-                .OnDelete(DeleteBehavior.Cascade);
-            entity.HasOne(e => e.BatchControl)
-                .WithOne(e => e.BatchHeader)
-                .HasForeignKey<BatchControl>(e => e.BatchHeaderId)
-                .IsRequired()
-                .OnDelete(DeleteBehavior.Cascade);
-        });
+        // AchFile <-> BatchHeader (one-to-many)
+        modelBuilder.Entity<BatchHeader>()
+            .HasOne(bh => bh.AchFile)
+            .WithMany(af => af.BatchHeaders)
+            .HasForeignKey(bh => bh.AchFileId);
 
-        // BatchControl
-        modelBuilder.Entity<BatchControl>(entity =>
-        {
-            entity.ToTable("batch_controls");
-            entity.HasKey(e => e.Id);
-            entity.Property(e => e.EntryAddendaCount).IsRequired();
-            entity.Property(e => e.TotalDebit).HasColumnType("numeric(12,2)").IsRequired();
-            entity.Property(e => e.TotalCredit).HasColumnType("numeric(12,2)").IsRequired();
-            entity.Property(e => e.LineNumber).IsRequired();
-            entity.Property(e => e.UnparsedRecord).HasColumnType("char(94)").IsRequired();
-            entity.HasIndex(e => e.BatchHeaderId).IsUnique();
-        });
+        // BatchHeader <-> BatchControl (one-to-many)
+        modelBuilder.Entity<BatchControl>()
+            .HasOne(bc => bc.BatchHeader)
+            .WithMany(bh => bh.BatchControls)
+            .HasForeignKey(bc => bc.BatchHeaderId);
 
-        // EntryDetail
-        modelBuilder.Entity<EntryDetail>(entity =>
-        {
-            entity.ToTable("entry_details");
-            entity.HasKey(e => e.Id);
-            entity.Property(e => e.RoutingNumber).HasColumnType("char(9)").IsRequired();
-            entity.Property(e => e.AccountNumber).IsRequired();
-            entity.Property(e => e.Amount).HasColumnType("numeric(12,2)").IsRequired();
-            entity.Property(e => e.IndividualName).IsRequired();
-            entity.Property(e => e.LineNumber).IsRequired();
-            entity.Property(e => e.UnparsedRecord).HasColumnType("char(94)").IsRequired();
-            entity.HasMany(e => e.Addendas)
-                .WithOne(e => e.EntryDetail)
-                .HasForeignKey(e => e.EntryDetailId)
-                .IsRequired()
-                .OnDelete(DeleteBehavior.Cascade);
-        });
+        // BatchHeader <-> EntryDetail (one-to-many)
+        modelBuilder.Entity<EntryDetail>()
+            .HasOne(ed => ed.BatchHeader)
+            .WithMany(bh => bh.EntryDetails)
+            .HasForeignKey(ed => ed.BatchHeaderId);
 
-        // Addenda
-        modelBuilder.Entity<Addenda>(entity =>
-        {
-            entity.ToTable("addendas");
-            entity.HasKey(e => e.Id);
-            entity.Property(e => e.Information).IsRequired();
-            entity.Property(e => e.LineNumber).IsRequired();
-            entity.Property(e => e.UnparsedRecord).HasColumnType("char(94)").IsRequired();
-        });
+        // EntryDetail <-> Addenda (one-to-many)
+        modelBuilder.Entity<Addenda>()
+            .HasOne(a => a.EntryDetail)
+            .WithMany(ed => ed.Addendas)
+            .HasForeignKey(a => a.EntryDetailId);
+
     }
 }

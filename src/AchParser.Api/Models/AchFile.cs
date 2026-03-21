@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace AchParser.Api.Models;
 
@@ -11,7 +12,7 @@ public class AchFile
     public string UnparsedFile { get; set; } = null!;
     public DateTime CreatedAt { get; set; }
 
-    public FileHeader? FileHeader { get; set; }
-    public FileControl? FileControl { get; set; }
-    public ICollection<BatchHeader> BatchHeaders { get; set; } = new List<BatchHeader>();
+    public ICollection<FileHeader>? FileHeaders { get; set; } = new List<FileHeader>();
+    public ICollection<FileControl>? FileControls { get; set; } = new List<FileControl>();
+    public ICollection<BatchHeader>? BatchHeaders { get; set; } = new List<BatchHeader>();
 }

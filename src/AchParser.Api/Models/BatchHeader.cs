@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations.Schema;
 using System;
 using System.Collections.Generic;
 
@@ -13,7 +14,10 @@ public class BatchHeader
     public int LineNumber { get; set; }
     public string UnparsedRecord { get; set; } = null!;
 
-    public AchFile AchFile { get; set; } = null!;
-    public BatchControl BatchControl { get; set; } = null!;
-    public ICollection<EntryDetail> EntryDetails { get; set; } = new List<EntryDetail>();
+    public AchFile? AchFile { get; set; }
+
+    public ICollection<BatchControl>? BatchControls { get; set; } = new List<BatchControl>();
+
+    [InverseProperty("BatchHeader")]
+    public ICollection<EntryDetail>? EntryDetails { get; set; }
 }

@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations.Schema;
 using System;
 
 namespace AchParser.Api.Models;
@@ -12,5 +13,5 @@ public class BatchControl
     public int LineNumber { get; set; }
     public string UnparsedRecord { get; set; } = null!;
 
-    public BatchHeader BatchHeader { get; set; } = null!;
+    public BatchHeader? BatchHeader { get; set; }
 }
