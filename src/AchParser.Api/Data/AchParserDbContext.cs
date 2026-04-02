@@ -26,6 +26,16 @@ public class AchParserDbContext : DbContext
         // the different patterns supported at design time, see https://go.microsoft.com/fwlink/?linkid=851728
 
 
+
+        // Explicitly set plural table names
+        modelBuilder.Entity<AchFile>().ToTable("ach_files");
+        modelBuilder.Entity<FileHeader>().ToTable("file_headers");
+        modelBuilder.Entity<FileControl>().ToTable("file_controls");
+        modelBuilder.Entity<BatchHeader>().ToTable("batch_headers");
+        modelBuilder.Entity<BatchControl>().ToTable("batch_controls");
+        modelBuilder.Entity<EntryDetail>().ToTable("entry_details");
+        modelBuilder.Entity<Addenda>().ToTable("addendas");
+
         // AchFile <-> FileHeader (one-to-many)
         modelBuilder.Entity<FileHeader>()
             .HasOne(fh => fh.AchFile)
