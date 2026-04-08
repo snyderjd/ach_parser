@@ -2,22 +2,22 @@
 
 Document: 004-ach-file-parser.md
 
-Summary
+## Summary
 - Implement an AchFileParser class that converts a NACHA-formatted ACH text file (string) into the domain objects defined in the project (AchFile, FileHeader, BatchHeader, EntryDetail, Addenda, BatchControl, FileControl). The parser is parse-only (no DB I/O) and returns a ParseResult containing the parsed AchFile (when available) and a list of parsing issues (errors, warnings, info).
 
-Goals
+## Goals
 - Parse strict NACHA files (94-character fixed-width records) into domain objects, preserving raw records and line numbers.
 - Return a non-throwing result object (ParseResult) containing parsed file and structured ParseIssues.
 - Keep the parser parse-only: persistence is handled by the service/controller layer.
 
-Assumptions
+## Assumptions
 1. Parser is parse-only; controller/service code handles persistence.
 2. Parser computes and sets `AchFile.Hash` (SHA-256 hex) and `AchFile.UnparsedFile`. `AchFile.CreatedAt` is left for the caller/persistence layer to set.
 3. Parser API is synchronous: `Parse(string content, string fileName) -> ParseResult`.
 4. Parser enforces strict NACHA fixed-width (94 characters per logical record). Wrong-length records generate `Error` ParseIssues; parser will attempt to continue when safe.
 5. Parser accepts an optional `ILogger<AchFileParser>` in its constructor for diagnostics.
 
-High-Level Design
+## High-Level Design
 - Location: `src/AchParser.Api/Parsing`
 - Public surface:
   - `IAchFileParser` (interface)
@@ -45,7 +45,7 @@ High-Level Design
     - Field-level anomalies like routing checksum mismatch -> `Warning`.
     - Diagnostics -> `Info`.
 
-Field mapping (reference)
+## Field mapping (reference)
 - Parser must set the following model properties (where values are derivable from fields):
   - `AchFile.Filename` (provided `fileName`)
   - `AchFile.Hash` (SHA-256 hex)
@@ -59,7 +59,7 @@ Field mapping (reference)
 
 Note: Exact character positions follow standard NACHA field widths; any fields not mapped to models should remain in `UnparsedRecord`.
 
-Result types (example)
+## Result types (example)
 
 Example definitions (illustrative):
 
@@ -74,24 +74,24 @@ public record ParseResult(AchFile? File, IReadOnlyList<ParseIssue> Issues)
 }
 ```
 
-Implementation Checklist (execution steps)
+## Implementation Checklist (execution steps)
 
 Repository artifacts to add (implementer will create these files after approval):
 
 - PRD
   - [x] Create `docs/prds/004-ach-file-parser.md` (this document)
 - Parsing code
-  - [ ] Add directory `src/AchParser.Api/Parsing`
-  - [ ] Add `IAchFileParser.cs`
-  - [ ] Add `ParseResult.cs`, `ParseIssue.cs`, `ParseSeverity.cs`
-  - [ ] Add `AchFileParser.cs` with:
-    - [ ] Line splitting, strict 94-char check
-    - [ ] Per-record parsing helpers: `ParseFileHeader`, `ParseBatchHeader`, `ParseEntryDetail`, `ParseAddenda`, `ParseBatchControl`, `ParseFileControl`
-    - [ ] Context management: open batch, close batch, last entry tracking
+  - [x] Add directory `src/AchParser.Api/Parsing`
+  - [x] Add `IAchFileParser.cs`
+  - [x] Add `ParseResult.cs`, `ParseIssue.cs`, `ParseSeverity.cs`
+  - [x] Add `AchFileParser.cs` with:
+    - [x] Line splitting, strict 94-char check
+    - [x] Per-record parsing helpers: `ParseFileHeader`, `ParseBatchHeader`, `ParseEntryDetail`, `ParseAddenda`, `ParseBatchControl`, `ParseFileControl`
+    - [x] Context management: open batch, close batch, last entry tracking
     - [ ] Totals calculation & validation vs control records
-    - [ ] SHA-256 hash computation; set `AchFile.Hash` and `AchFile.UnparsedFile`
-    - [ ] Populate `UnparsedRecord` and `LineNumber` on every model
-    - [ ] Use optional `ILogger<AchFileParser>` for diagnostics
+    - [x] SHA-256 hash computation; set `AchFile.Hash` and `AchFile.UnparsedFile`
+    - [x] Populate `UnparsedRecord` and `LineNumber` on every model
+    - [x] Use optional `ILogger<AchFileParser>` for diagnostics
 - Tests
   - [ ] Add unit tests in `tests/AchParser.Api.UnitTests/Parsing/AchFileParserTests.cs`:
     - [ ] Valid file happy path
@@ -106,7 +106,7 @@ Repository artifacts to add (implementer will create these files after approval)
 - Documentation / usage
   - [ ] Add brief example usage comment to `IAchFileParser` and optionally to `FileController` docs
 
-Testing Strategy
+## Testing Strategy
 - Unit tests will use sample NACHA strings. The existing `AchParser.Generator` can produce valid sample files; tests should use deterministic samples for assertions.
 - Tests assert:
   - Model hierarchy (counts of file headers, batch headers, entries, addendas)
@@ -116,7 +116,7 @@ Testing Strategy
   - ParseIssue severity and messages for malformed cases
   - Hash calculation equals expected SHA-256 hex
 
-Edge cases & error-handling policy
+## Edge cases & error-handling policy
 - If record length != 94 for any line -> create an `Error` ParseIssue with line number. Parser will attempt to continue, but missing mandatory records may lead to `File = null` in `ParseResult`.
 - Addenda without a preceding entry -> `Error`.
 - Entry outside a batch -> `Error`.
@@ -125,14 +125,14 @@ Edge cases & error-handling policy
 - Routing checksum mismatches -> `Warning`.
 - Parser will produce `ParseIssue` entries and attempt to build partial models when possible to aid debugging.
 
-Estimated effort
+## Estimated effort
 - PRD only: ~1 hour (this task, completed).
 - Implementation + unit tests: ~1.5–2.5 days.
 
-Next steps
+## Next steps
 - The PRD file has been prepared. When you want me to proceed I can:
   1. Implement the parser and tests per the checklist.
   2. Or pause until you request implementation.
 
-Contact
+## Contact
 - If you want different handling for any validation severity, CreatedAt behavior, or API (sync vs async), tell me and I will update the plan before implementation.
