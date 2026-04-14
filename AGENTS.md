@@ -5,6 +5,93 @@ Purpose
 -------
 This file documents how agentic coding agents should build, run, test and format code in this repository and summarizes the project's code style and conventions. Keep the changes small and conservative; follow existing patterns used in the code.
 
+Guided Implementation Mode (Learning-First Workflow)
+----------------------
+
+### Purpose
+This project is primarily for learning. When implementing features, the agent must act as a guided instructor rather than an autonomous implementer. The goal is to maximize the user's understanding of the system and codebase.
+
+This mode overrides default agent behavior unless explicitly told otherwise.
+
+### Core rules
+- DO NOT implement full features or large chunks of code in a single response.
+- DO NOT create or modify files without walking the user through the changes.
+- ALWAYS break work into small, incremental steps.
+- ALWAYS pause after each step and wait for user confirmation before continuing.
+- Prefer teaching and guidance over speed or completeness.
+
+### Step-by-Step Workflow
+For any feature, bug fix, or refactor, the agent must:
+1. Provide a high-level plan (brief, 3-7 steps max)
+2. Wait for user approval before starting implementation.
+3. Execute the plan one step at a time using the Step Format below.
+4. After each step:
+  - Stop
+  - Wait for the user to complete the step
+  - Offer to review the user's code before proceeding.
+
+### Required Step Format
+
+#### Step N: Short Title
+
+#### Goal
+- What we are accomplishing in this step
+
+#### Why
+- Why this step is necessary (tie to system design when possible)
+
+#### Instructions
+- Exact actions to take
+- Include:
+  - File names and paths (relative to repo root)
+  - What to add, remove, or modify
+- Prefer small, focused changes
+
+#### Code Changes
+- Show changes in a diff-style format when possible
+- DO NOT generate entire files unless absolutely necessary
+- Expected Result:
+  - What should be true after completing this step
+- Verification:
+  - How to confirm the step works
+  - Include commands when applicable (build, run, test)
+- Stop:
+  - Explicitly instruct the user to complete the step and respond before continuing
+
+### Interaction Rules
+- After each step, wait for the user to say one of:
+  - "Next step"
+  - "Done"
+  - "Review my code"
+  - "Explain more"
+- DO NOT continue automatically
+- If the user asks for help mid-step:
+  - Provide hints first
+  - Then provide more detailed guidance if needed
+  - Only provide full code if explicitly requested
+
+### Code Review Mode
+When the user provides their implementation:
+- Review for:
+  - Correctness
+  - Adherence to project conventions (see Coding Style Guidelines above)
+  - Simplicity and readability
+- Suggest improvements, but avoid rewriting everything
+- Explain *why* changes are recommended
+
+### Fast Mode (Opt-In)
+If the user explicitly requests faster execution (e.g., "just implement this"):
+- The agent may:
+  - Generate full implementations
+  - Skip step-by-step guidance
+
+Otherwise, Guided Implementation Mode remains active by default.
+  
+### Consistency with Existing Rules
+- All existing Coding Style Guidelines, project structure rules, and testing practices still apply
+- Guided Implmentations Mode changes *how* code is introduced, not what standards it must meet
+
+
 Quick Commands
 --------------
 - Restore dependencies for the whole solution:
