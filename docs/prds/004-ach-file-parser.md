@@ -88,21 +88,25 @@ Repository artifacts to add (implementer will create these files after approval)
     - [x] Line splitting, strict 94-char check
     - [x] Per-record parsing helpers: `ParseFileHeader`, `ParseBatchHeader`, `ParseEntryDetail`, `ParseAddenda`, `ParseBatchControl`, `ParseFileControl`
     - [x] Context management: open batch, close batch, last entry tracking
-    - [ ] Totals calculation & validation vs control records
+    - [x] Totals calculation & validation vs control records
+      - Note: implemented using EntryDetail.TransactionCode. Current implementation uses an explicit (limited) mapping for common NACHA transaction codes. This is a provisional implementation; a complete NACHA transaction-code -> debit/credit mapping should be added and verified against the NACHA specification.
     - [x] SHA-256 hash computation; set `AchFile.Hash` and `AchFile.UnparsedFile`
     - [x] Populate `UnparsedRecord` and `LineNumber` on every model
     - [x] Use optional `ILogger<AchFileParser>` for diagnostics
 - Tests
-  - [ ] Add unit tests in `tests/AchParser.Api.UnitTests/Parsing/AchFileParserTests.cs`:
-    - [ ] Valid file happy path
-    - [ ] Multiple batches + addenda
-    - [ ] Line length mismatch behavior
-    - [ ] Missing header or missing file control -> fatal errors
-    - [ ] Totals mismatch -> Error
-    - [ ] Routing checksum mismatch -> Warning
-    - [ ] Hash correctness test
+    - [ ] Add unit tests in `tests/AchParser.Api.UnitTests/Parsing/AchFileParserTests.cs`:
+     - [ ] Valid file happy path
+     - [ ] Multiple batches + addenda
+     - [ ] Line length mismatch behavior
+     - [ ] Missing header or missing file control -> fatal errors
+     - [ ] Totals mismatch -> Error
+     - [ ] Routing checksum mismatch -> Warning
+     - [ ] Hash correctness test
+    - [ ] Replace provisional transaction-code mapping with full NACHA mapping and add unit tests covering edge codes
+
 - CI/build
-  - [ ] Run `dotnet build` and `dotnet test` and fix any issues
+  - [ ] Run `dotnet build` and `dotnet test` and fix any issues (note: current test project requires EF Core InMemory package and test adjustments)
+
 - Documentation / usage
   - [ ] Add brief example usage comment to `IAchFileParser` and optionally to `FileController` docs
 

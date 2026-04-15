@@ -11,6 +11,7 @@ public class EntryDetail
     public Guid? BatchHeaderId { get; set; }
     public string RoutingNumber { get; set; } = null!;
     public string AccountNumber { get; set; } = null!;
+    public int TransactionCode { get; set; }
     public decimal Amount { get; set; }
     public string IndividualName { get; set; } = null!;
     public int LineNumber { get; set; }

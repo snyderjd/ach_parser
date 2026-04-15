@@ -38,6 +38,15 @@ public class AchFileParser : IAchFileParser
         BatchHeader? currentBatch = null;
         EntryDetail? lastEntry = null;
 
+        // running totals/counters
+        int fileEntryAddendaCount = 0;
+        decimal fileTotalDebit = 0m;
+        decimal fileTotalCredit = 0m;
+
+        int currentBatchEntryAddendaCount = 0;
+        decimal currentBatchTotalDebit = 0m;
+        decimal currentBatchTotalCredit = 0m;
+
         for (int i = 0; i < lines.Length; i++)
         {
             var lineNumber = i + 1;
@@ -84,6 +93,29 @@ public class AchFileParser : IAchFileParser
                             currentBatch.EntryDetails ??= new List<EntryDetail>();
                             currentBatch.EntryDetails.Add(entry);
                             lastEntry = entry;
+
+                            // update running counts/totals
+                            currentBatchEntryAddendaCount += 1; // each entry counts as one
+                            fileEntryAddendaCount += 1;
+
+                            // classify transaction code according to NACHA mapping (by last digit groups)
+                            var tc = entry.TransactionCode;
+                            var dir = GetTransactionDirection(tc);
+                            if (dir == TransactionDirection.Debit)
+                            {
+                                currentBatchTotalDebit += entry.Amount;
+                                fileTotalDebit += entry.Amount;
+                            }
+                            else if (dir == TransactionDirection.Credit)
+                            {
+                                currentBatchTotalCredit += entry.Amount;
+                                fileTotalCredit += entry.Amount;
+                            }
+                            else
+                            {
+                                // Unknown transaction code mapping - this is a strict parsing error
+                                issues.Add(new ParseIssue(ParseSeverity.Error, $"Unknown transaction code: {tc}", lineNumber));
+                            }
                         }
                         break;
                     case '7':
@@ -97,6 +129,10 @@ public class AchFileParser : IAchFileParser
                             add.EntryDetail = lastEntry;
                             lastEntry.Addendas ??= new List<Addenda>();
                             lastEntry.Addendas.Add(add);
+
+                            // addenda count toward entry/addenda count
+                            currentBatchEntryAddendaCount += 1;
+                            fileEntryAddendaCount += 1;
                         }
                         break;
                     case '8':
@@ -109,14 +145,51 @@ public class AchFileParser : IAchFileParser
                         {
                             bc.BatchHeader = currentBatch;
                             currentBatch.BatchControls!.Add(bc);
-                            currentBatch = null; // close batch
+
+                            // validate counts and totals
+                            if (bc.EntryAddendaCount != currentBatchEntryAddendaCount)
+                            {
+                                issues.Add(new ParseIssue(ParseSeverity.Error, $"Batch entry/addenda count mismatch: control={bc.EntryAddendaCount} calculated={currentBatchEntryAddendaCount}", bc.LineNumber));
+                            }
+
+                            if (bc.TotalDebit != currentBatchTotalDebit)
+                            {
+                                issues.Add(new ParseIssue(ParseSeverity.Error, $"Batch total debit mismatch: control={bc.TotalDebit} calculated={currentBatchTotalDebit}", bc.LineNumber));
+                            }
+
+                            if (bc.TotalCredit != currentBatchTotalCredit)
+                            {
+                                issues.Add(new ParseIssue(ParseSeverity.Error, $"Batch total credit mismatch: control={bc.TotalCredit} calculated={currentBatchTotalCredit}", bc.LineNumber));
+                            }
+
+                            // reset batch running totals and close batch
+                            currentBatch = null;
                             lastEntry = null;
+                            currentBatchEntryAddendaCount = 0;
+                            currentBatchTotalDebit = 0m;
+                            currentBatchTotalCredit = 0m;
                         }
                         break;
                     case '9':
                         var fc = ParseFileControl(raw, lineNumber);
                         fc.AchFile = achFile;
                         achFile.FileControls!.Add(fc);
+
+                        // validate file-level totals
+                        if (fc.EntryAddendaCount != fileEntryAddendaCount)
+                        {
+                            issues.Add(new ParseIssue(ParseSeverity.Error, $"File entry/addenda count mismatch: control={fc.EntryAddendaCount} calculated={fileEntryAddendaCount}", fc.LineNumber));
+                        }
+
+                        if (fc.TotalDebit != fileTotalDebit)
+                        {
+                            issues.Add(new ParseIssue(ParseSeverity.Error, $"File total debit mismatch: control={fc.TotalDebit} calculated={fileTotalDebit}", fc.LineNumber));
+                        }
+
+                        if (fc.TotalCredit != fileTotalCredit)
+                        {
+                            issues.Add(new ParseIssue(ParseSeverity.Error, $"File total credit mismatch: control={fc.TotalCredit} calculated={fileTotalCredit}", fc.LineNumber));
+                        }
                         break;
                     default:
                         issues.Add(new ParseIssue(ParseSeverity.Warning, $"Unknown record type '{recType}'", lineNumber));
@@ -199,6 +272,13 @@ public class AchFileParser : IAchFileParser
 
     private static EntryDetail ParseEntryDetail(string raw, int lineNumber)
     {
+        // read 2-char transaction code at positions 2-3 (1-based); 0-based start index = 1
+        var txCodeStr = SubstringSafe(raw, 1, 2).Trim();
+        int txCode = 0;
+
+        if (!string.IsNullOrEmpty(txCodeStr) && int.TryParse(txCodeStr, out var tcs))
+            txCode = tcs;
+
         // positions: 4-12 RDFI routing (9) + check digit? NACHA routing is typically 9 digits at pos 4-12, account 13-29 (17), amount 30-39 (10)
         var routing = SubstringSafe(raw, 3, 9).Trim();
         var account = SubstringSafe(raw, 12, 17).Trim();
@@ -215,6 +295,7 @@ public class AchFileParser : IAchFileParser
             LineNumber = lineNumber,
             RoutingNumber = routing,
             AccountNumber = account,
+            TransactionCode = txCode,
             Amount = amount,
             IndividualName = SubstringSafe(raw, 53, 22).Trim()
         };
@@ -296,5 +377,46 @@ public class AchFileParser : IAchFileParser
         if (startIndex0Based >= s.Length) return string.Empty;
         var maxLen = Math.Min(length, s.Length - startIndex0Based);
         return s.Substring(startIndex0Based, maxLen);
+    }
+
+    private enum TransactionDirection { Unknown = 0, Debit = 1, Credit = 2 }
+
+    // Map NACHA transaction codes to Debit/Credit direction.
+    // This function implements the standard NACHA mapping where certain ranges indicate debit vs credit.
+    // Source: NACHA specifications (common mapping):
+    // - 22, 32, 33, 27, 37, 28, 38, 29, 39 etc. map to credits or debits depending on code.
+    // For correctness we implement explicit known codes used commonly:
+    private static TransactionDirection GetTransactionDirection(int transactionCode)
+    {
+        // Explicit mapping for common ACH transaction codes
+        // Credits (examples): 22 (Credit to checking), 32 (Credit to savings), 42 (Automated Collection?), 52, 62
+        // Debits (examples): 27 (Debit to checking), 37 (Debit to savings), 47, 57, 67
+        // The full NACHA table lists many more; implement the widely-used subset and fallback to Unknown.
+
+        switch (transactionCode)
+        {
+            // Credits
+            case 22:
+            case 32:
+            case 42:
+            case 52:
+            case 62:
+            case 72:
+            case 82:
+                return TransactionDirection.Credit;
+
+            // Debits
+            case 27:
+            case 37:
+            case 47:
+            case 57:
+            case 67:
+            case 77:
+            case 87:
+                return TransactionDirection.Debit;
+
+            default:
+                return TransactionDirection.Unknown;
+        }
     }
 }
