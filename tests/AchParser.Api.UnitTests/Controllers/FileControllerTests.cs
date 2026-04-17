@@ -65,18 +65,20 @@ public class FileControllerTests
             ContentType = "text/plain"
         };
 
+        var uploadDto = new FileUploadDto { File = formFile };
+
         // Act
-        var result = await controller.UploadFile(formFile);
+        var result = await controller.UploadFile(uploadDto);
 
         // Assert
         var createdResult = Assert.IsType<CreatedAtActionResult>(result);
-        var dto = Assert.IsType<AchFileResponseDto>(createdResult.Value);
-        Assert.Equal(fileName, dto.FileName);
-        Assert.Equal(fileContent, dto.FileContent);
-        Assert.NotEqual(Guid.Empty, dto.Id);
+        var respDto = Assert.IsType<AchFileResponseDto>(createdResult.Value);
+        Assert.Equal(fileName, respDto.FileName);
+        Assert.Equal(fileContent, respDto.FileContent);
+        Assert.NotEqual(Guid.Empty, respDto.Id);
 
         // Confirm file is in database
-        var dbFile = dbContext.AchFiles.FirstOrDefault(f => f.Id == dto.Id);
+        var dbFile = dbContext.AchFiles.FirstOrDefault(f => f.Id == respDto.Id);
         Assert.NotNull(dbFile);
         Assert.Equal(fileContent, dbFile.UnparsedFile);
     }
