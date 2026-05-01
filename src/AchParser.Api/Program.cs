@@ -1,4 +1,5 @@
 using AchParser.Api.Data;
+using AchParser.Api.Parsing;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -6,6 +7,8 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddControllers();
+
+builder.Services.AddScoped<IAchFileParser, AchFileParser>();
 
 builder.Services.AddDbContext<AchParserDbContext>(options =>
 {

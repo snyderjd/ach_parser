@@ -135,38 +135,38 @@
 NOTE: follow the project's Guided Implementation Mode (AGENTS.md). Each step should be small and verifiable. After completing each step, run tests or a build and report back.
 
 ### Phase A — Preparations
-1. [ ] (A1) Add parser & logger dependencies to FileController
+1. [x] (A1) Add parser & logger dependencies to FileController
    - Inject IAchFileParser and ILogger<FileController> into FileController constructor.
    - Add using statements as needed.
    - Register AchFileParser in DI (Program.cs): services.AddScoped<IAchFileParser, AchFileParser>();
 
-2. [ ] (A2) Update unit test setup
+2. [x] (A2) Update unit test setup
    - Update existing FileController unit tests to supply an IAchFileParser (mock or real) and ILogger to the controller constructor.
 
 ### Phase B — Upload flow changes
-3. [ ] (B1) Persist raw AchFile early
+3. [x] (B1) Persist raw AchFile early
    - In UploadFile, compute hash (existing) and create AchFile domain object with Id (Guid.NewGuid()), Filename, Hash, UnparsedFile, CreatedAt.
    - Save AchFile to DB immediately or within the transaction before child persistence.
 
-4. [ ] (B2) Parse uploaded content
+4. [x] (B2) Parse uploaded content
    - Invoke _parser.Parse(content, fileName) and collect ParseResult.
 
-5. [ ] (B3) Handle parse failures (no parsed file or errors)
+5. [x] (B3) Handle parse failures (no parsed file or errors)
    - If ParseResult.File == null or ParseResult.Issues contains ParseSeverity.Error:
      - Log parse issues.
      - Return 400 BadRequest with { fileId, issues } body.
      - Do not persist parsed children.
 
-6. [ ] (B4) Prepare parsed model for persistence
+6. [x] (B4) Prepare parsed model for persistence
    - If parse succeeds (ParseResult.File != null and no Error issues):
      - Call a local helper to assign GUIDs and set FK values for the AchFile and all nested parsed entities.
      - Ensure navigation properties align with FK fields.
 
-7. [ ] (B5) Persist parsed children in a single transaction
+7. [x] (B5) Persist parsed children in a single transaction
    - Start a DB transaction (if using relational DB). Add or attach the AchFile (if not already added), then add all parsed child entities (or Add the top-level AchFile which includes navigations) and SaveChanges.
    - Commit transaction.
 
-8. [ ] (B6) Finalize response
+8. [x] (B6) Finalize response
    - On successful persistence return 201 Created with AchFileResponseDto.
 
 ### Phase C — Retrieval endpoints

@@ -1,28 +1,47 @@
 
-using AchParser.Api.Controllers;
-using AchParser.Api.Data;
-using AchParser.Api.DTOs;
-using AchParser.Api.Models;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Moq;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
+
+using Moq;
+
+using AchParser.Api.Controllers;
+using AchParser.Api.Data;
+using AchParser.Api.DTOs;
+using AchParser.Api.Models;
+using AchParser.Api.Parsing;
+
 using Xunit;
 
 public class FileControllerTests
 {
-
     private AchParserDbContext GetInMemoryDbContext()
     {
         var options = new DbContextOptionsBuilder<AchParserDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
         return new AchParserDbContext(options);
+    }
+
+    private static Mock<IAchFileParser> DefaultParserMock()
+    {
+        var mock = new Mock<IAchFileParser>();
+        mock.Setup(p => p.Parse(It.IsAny<string>(), It.IsAny<string>()))
+            .Returns(new ParseResult(null, new List<ParseIssue>()));
+        return mock;
+    }
+
+    private FileController CreateController(AchParserDbContext dbContext, IAchFileParser? parser = null)
+    {
+        var resolvedParser = parser ?? DefaultParserMock().Object;
+        return new FileController(dbContext, resolvedParser, NullLogger<FileController>.Instance);
     }
 
     [Fact]
@@ -36,7 +55,7 @@ public class FileControllerTests
             new AchFile { Id = Guid.NewGuid(), Filename = "file2.ach", Hash = "hash2", UnparsedFile = "content2", CreatedAt = DateTime.UtcNow }
         });
         await dbContext.SaveChangesAsync();
-        var controller = new FileController(dbContext);
+        var controller = CreateController(dbContext);
 
         // Act
         var result = await controller.GetFiles();
@@ -55,7 +74,14 @@ public class FileControllerTests
     {
         // Arrange
         using var dbContext = GetInMemoryDbContext();
-        var controller = new FileController(dbContext);
+
+        // Parser returns a successful result with a minimal parsed AchFile
+        var parsedAchFile = new AchFile { Filename = "testfile.ach" };
+        var successParser = new Mock<IAchFileParser>();
+        successParser.Setup(p => p.Parse(It.IsAny<string>(), It.IsAny<string>()))
+            .Returns(new ParseResult(parsedAchFile, new List<ParseIssue>()));
+
+        var controller = CreateController(dbContext, successParser.Object);
         var fileName = "testfile.ach";
         var fileContent = "test content";
         var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(fileContent));
@@ -99,7 +125,7 @@ public class FileControllerTests
         };
         dbContext.AchFiles.Add(achFile);
         await dbContext.SaveChangesAsync();
-        var controller = new FileController(dbContext);
+        var controller = CreateController(dbContext);
 
         // Act
         var result = await controller.GetFile(achFile.Id);
@@ -117,7 +143,7 @@ public class FileControllerTests
     {
         // Arrange
         using var dbContext = GetInMemoryDbContext();
-        var controller = new FileController(dbContext);
+        var controller = CreateController(dbContext);
 
         // Act
         var result = await controller.GetFile(Guid.NewGuid());
