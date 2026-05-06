@@ -38,16 +38,16 @@ public class FileController : ControllerBase
     {
         var files = await _dbContext.AchFiles
             .AsNoTracking()
-            .Select(f => new AchFileResponseDto
-            {
-                Id = f.Id,
-                FileName = f.Filename,
-                FileContent = f.UnparsedFile,
-                OriginalFileName = f.Filename,
-                UploadedAt = f.CreatedAt
-            })
+            .Include(f => f.FileHeaders)
+            .Include(f => f.FileControls)
+            .Include(f => f.BatchHeaders!)
+                .ThenInclude(b => b.BatchControls)
+            .Include(f => f.BatchHeaders!)
+                .ThenInclude(b => b.EntryDetails!)
+                    .ThenInclude(e => e.Addendas)
             .ToListAsync();
-        return Ok(files);
+        
+        return Ok(files.Select(MapToDetailDto).ToList());
     }
 
     [HttpGet]
@@ -56,19 +56,19 @@ public class FileController : ControllerBase
     {
         var file = await _dbContext.AchFiles
             .AsNoTracking()
-            .Where(f => f.Id == id)
-            .Select(f => new AchFileResponseDto
-            {
-                Id = f.Id,
-                FileName = f.Filename,
-                FileContent = f.UnparsedFile,
-                OriginalFileName = f.Filename,
-                UploadedAt = f.CreatedAt
-            })
-            .FirstOrDefaultAsync();
+            .Include(f => f.FileHeaders)
+            .Include(f => f.FileControls)
+            .Include(f => f.BatchHeaders!)
+                .ThenInclude(b => b.BatchControls)
+            .Include(f => f.BatchHeaders!)
+                .ThenInclude(b => b.EntryDetails!)
+                    .ThenInclude(e => e.Addendas)
+            .FirstOrDefaultAsync(f => f.Id == id);
+        
         if (file == null)
             return NotFound();
-        return Ok(file);
+        
+        return Ok(MapToDetailDto(file));
     }
 
     [HttpPost]
@@ -196,6 +196,86 @@ public class FileController : ControllerBase
 
         return CreatedAtAction(nameof(GetFile), new { id = achFile.Id }, responseDto);
     }
+
+    private static AchFileDetailDto MapToDetailDto(AchFile f) => new()
+    {
+        Id = f.Id,
+        FileName = f.Filename,
+        FileContent = f.UnparsedFile,
+        OriginalFileName = f.Filename,
+        UploadedAt = f.CreatedAt,
+        FileHeaders = f.FileHeaders?.Select(MapToFileHeaderDto).ToList() ?? [],
+        FileControls = f.FileControls?.Select(MapToFileControlDto).ToList() ?? [],
+        BatchHeaders = f.BatchHeaders?.Select(MapToBatchHeaderDto).ToList() ?? []
+    };
+
+    private static FileHeaderDto MapToFileHeaderDto(FileHeader h) => new()
+    {
+        Id = h.Id,
+        ImmediateDestination = h.ImmediateDestination,
+        ImmediateOrigin = h.ImmediateOrigin,
+        FileCreationDate = h.FileCreationDate,
+        FileCreationTime = h.FileCreationTime,
+        ImmediateDestinationName = h.ImmediateDestinationName,
+        ImmediateOriginName = h.ImmediateOriginName,
+        LineNumber = h.LineNumber,
+        UnparsedRecord = h.UnparsedRecord
+    };
+
+    private static FileControlDto MapToFileControlDto(FileControl c) => new()
+    {
+        Id = c.Id,
+        BatchCount = c.BatchCount,
+        BlockCount = c.BlockCount,
+        EntryAddendaCount = c.EntryAddendaCount,
+        TotalDebit = c.TotalDebit,
+        TotalCredit = c.TotalCredit,
+        LineNumber = c.LineNumber,
+        UnparsedRecord = c.UnparsedRecord
+    };
+
+    private static BatchHeaderDto MapToBatchHeaderDto(BatchHeader b) => new()
+    {
+        Id = b.Id,
+        ServiceClassCode = b.ServiceClassCode,
+        CompanyName = b.CompanyName,
+        CompanyIdentification = b.CompanyIdentification,
+        LineNumber = b.LineNumber,
+        UnparsedRecord = b.UnparsedRecord,
+        BatchControls = b.BatchControls?.Select(MapToBatchControlDto).ToList() ?? [],
+        EntryDetails = b.EntryDetails?.Select(MapToEntryDetailDto).ToList() ?? []
+    };
+
+    private static BatchControlDto MapToBatchControlDto(BatchControl c) => new()
+    {
+        Id = c.Id,
+        EntryAddendaCount = c.EntryAddendaCount,
+        TotalDebit = c.TotalDebit,
+        TotalCredit = c.TotalCredit,
+        LineNumber = c.LineNumber,
+        UnparsedRecord = c.UnparsedRecord
+    };
+
+    private static EntryDetailDto MapToEntryDetailDto(EntryDetail e) => new()
+    {
+        Id = e.Id,
+        RoutingNumber = e.RoutingNumber,
+        AccountNumber = e.AccountNumber,
+        TransactionCode = e.TransactionCode,
+        Amount = e.Amount,
+        IndividualName = e.IndividualName,
+        LineNumber = e.LineNumber,
+        UnparsedRecord = e.UnparsedRecord,
+        Addendas = e.Addendas?.Select(MapToAddendaDto).ToList() ?? []
+    };
+
+    private static AddendaDto MapToAddendaDto(Addenda a) => new()
+    {
+        Id = a.Id,
+        Information = a.Information,
+        LineNumber = a.LineNumber,
+        UnparsedRecord = a.UnparsedRecord
+    };
 
     /// <summary>
     /// Assigns new GUIDs and FK values to all parsed child entities before persistence.

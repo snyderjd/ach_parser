@@ -131,9 +131,6 @@
 - Parsing fatal error (400 BadRequest):
   - Body: { "fileId": "<guid>", "issues": [ ParseIssueDto, ... ] }
 
-## Implementation Tasklist (detailed, small steps)
-NOTE: follow the project's Guided Implementation Mode (AGENTS.md). Each step should be small and verifiable. After completing each step, run tests or a build and report back.
-
 ### Phase A — Preparations
 1. [x] (A1) Add parser & logger dependencies to FileController
    - Inject IAchFileParser and ILogger<FileController> into FileController constructor.
@@ -170,16 +167,16 @@ NOTE: follow the project's Guided Implementation Mode (AGENTS.md). Each step sho
    - On successful persistence return 201 Created with AchFileResponseDto.
 
 ### Phase C — Retrieval endpoints
-9. [ ] (C1) Create DTOs
+9. [x] (C1) Create DTOs
    - Add the AchFileDetailDto and nested DTOs (see DTOs section) under src/AchParser.Api/DTOs.
 
-10. [ ] (C2) Implement mapping to DTOs
+10. [x] (C2) Implement mapping to DTOs
     - Add private mapping helpers to map domain models to DTOs (file -> detail dto, batch -> batch dto, etc.). Keep helpers local to controller or a small internal mapper class.
 
-11. [ ] (C3) Update GetFiles to return AchFileDetailDto list
+11. [x] (C3) Update GetFiles to return AchFileDetailDto list
     - Query AchFiles using .Include to eager load related associations (FileHeaders, FileControls, BatchHeaders -> include BatchControls and EntryDetails -> include Addendas) and project to DTOs.
 
-12. [ ] (C4) Update GetFile(id) to return AchFileDetailDto
+12. [x] (C4) Update GetFile(id) to return AchFileDetailDto
     - Similar to GetFiles but filter by id and return NotFound if missing.
 
 ### Phase D — Tests
@@ -219,9 +216,6 @@ NOTE: follow the project's Guided Implementation Mode (AGENTS.md). Each step sho
 - Use a transaction to avoid partial writes.
 - Keep changes minimal and local to the controller where possible; prefer small helper methods over new public types unless reuse is anticipated.
 - Maintain backward compatibility for existing consumers using AchFileResponseDto for upload success responses; introduce AchFileDetailDto for retrieval.
-
-## Guided Implementation Mode
-- Follow the Guided Implementation Mode detailed in AGENTS.md.
 
 ## Security & Privacy
 - Do not log file contents or sensitive account numbers in plain text in production logs. For development / test logging, be careful not to leak production data.
