@@ -180,21 +180,21 @@
     - Similar to GetFiles but filter by id and return NotFound if missing.
 
 ### Phase D — Tests
-13. [ ] (D1) Update existing tests
+13. [x] (D1) Update existing tests
     - Update FileControllerTests to construct FileController with parser and logger dependencies.
     - Update expectations to reflect DTOs returned by GetFile/GetFiles.
 
-14. [ ] (D2) Add unit tests for upload success
+14. [x] (D2) Add unit tests for upload success
     - UploadFile_PersistsParsedChildren_WhenParserSucceeds
     - Use a real AchFileParser with sample ACH content or mock IAchFileParser to return a ParseResult with File and no fatal issues.
     - Assert database rows for parsed children are present and linked.
 
-15. [ ] (D3) Add unit tests for parsing failure
+15. [x] (D3) Add unit tests for parsing failure
     - UploadFile_PersistsRawOnly_AndReturnsBadRequest_WhenParserFails
     - Mock parser to return ParseResult.File == null or include an Error issue.
     - Assert raw AchFile persisted, child tables empty for that file id, and controller returns BadRequest with issues.
 
-16. [ ] (D4) Add tests for retrieval
+16. [x] (D4) Add tests for retrieval
     - GetFiles_ReturnsParsedAssociations_WhenPresent
     - GetFile_ReturnsParsedAssociations_WhenPresent
 
